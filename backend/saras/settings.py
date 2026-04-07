@@ -23,7 +23,7 @@ environ.Env.read_env(BASE_DIR / '.env')
 # ============================================================
 SECRET_KEY = env('DJANGO_SECRET_KEY', default='dev-secret-key-change-in-production-min-64-chars-random-aabbccddeeff')
 DEBUG = env('DEBUG')
-ALLOWED_HOSTS = env('ALLOWED_HOSTS')
+ALLOWED_HOSTS = env('ALLOWED_HOSTS', default=env('DJANGO_ALLOWED_HOSTS', default=['localhost', '127.0.0.1']))
 
 # ============================================================
 # INSTALLED APPS
@@ -95,20 +95,25 @@ ASGI_APPLICATION = 'saras.asgi.application'
 # ============================================================
 # DATABASE — PostgreSQL (PDFs stored as BYTEA)
 # ============================================================
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': env('DB_NAME', default='saras_db'),
-        'USER': env('DB_USER', default='saras_user'),
-        'PASSWORD': env('DB_PASSWORD', default='saras_dev_password'),
-        'HOST': env('DB_HOST', default='localhost'),
-        'PORT': env('DB_PORT', default='5432'),
-        'OPTIONS': {
-            'options': '-c default_transaction_isolation=serializable',
-        },
-        'CONN_MAX_AGE': 60,
+if env('DATABASE_URL', default=''):
+    DATABASES = {
+        'default': env.db('DATABASE_URL'),
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': env('DB_NAME', default='saras_db'),
+            'USER': env('DB_USER', default='saras_user'),
+            'PASSWORD': env('DB_PASSWORD', default='saras_dev_password'),
+            'HOST': env('DB_HOST', default='localhost'),
+            'PORT': env('DB_PORT', default='5432'),
+            'OPTIONS': {
+                'options': '-c default_transaction_isolation=serializable',
+            },
+            'CONN_MAX_AGE': 60,
+        }
+    }
 
 # ============================================================
 # CUSTOM USER MODEL
