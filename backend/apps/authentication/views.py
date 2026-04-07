@@ -37,6 +37,7 @@ class SARASLoginView(TokenObtainPairView):
     
     def post(self, request, *args, **kwargs):
         email = request.data.get('email', '')
+        client_ip = getattr(request, 'client_ip', request.META.get('REMOTE_ADDR', 'unknown'))
         
         # Attempt authentication
         response = super().post(request, *args, **kwargs)
@@ -58,7 +59,7 @@ class SARASLoginView(TokenObtainPairView):
             user.last_login_at = timezone.now()
             user.save(update_fields=['last_login_at'])
             
-            logger.info(f"Login success: {email} from {request.client_ip}")
+            logger.info(f"Login success: {email} from {client_ip}")
             
             # Wrap response
             return Response({
@@ -77,7 +78,7 @@ class SARASLoginView(TokenObtainPairView):
                 extra_data={'error': str(response.data)}
             )
             
-            logger.warning(f"Login failed: {email} from {request.client_ip}")
+            logger.warning(f"Login failed: {email} from {client_ip}")
         
         return response
 

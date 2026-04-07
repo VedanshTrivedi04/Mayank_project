@@ -8,6 +8,15 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const normalizeErrorMessage = (payload) => {
+    if (!payload) return null;
+    if (typeof payload === 'string') return payload;
+    if (payload.error && typeof payload.error === 'string') return payload.error;
+    if (payload.detail && typeof payload.detail === 'string') return payload.detail;
+    if (payload.message && typeof payload.message === 'string') return payload.message;
+    return 'Login failed. Please try again.';
+  };
+
   // Initialize Auth state from localStorage/API
   useEffect(() => {
     const initAuth = async () => {
@@ -66,8 +75,7 @@ export const AuthProvider = ({ children }) => {
       return userData;
     } catch (err) {
       console.error('Login failed', err);
-      // Backend returns errors in 'error' or 'detail' field
-      const errorMessage = err.response?.data?.error || err.response?.data?.detail || 'Invalid credentials';
+      const errorMessage = normalizeErrorMessage(err.response?.data) || 'Invalid credentials';
       setError(errorMessage);
       throw err;
     } finally {
